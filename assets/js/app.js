@@ -487,7 +487,7 @@
       setTimeout(ready, 1500);
     }
     // Outils de test (console) : __rnBloom.set(1.2) affiche l’instant 1,2 s de l’animation
-    window.__rnBloom = { set: (p) => { P = p; draw(); }, play: () => forward('debug'), back: backward, get P() { return P; }, get engine() { return engine; }, tick: (ms) => frame(prev + ms), get state() { return state; } };
+    window.__rnBloom = { set: (p) => { P = p; draw(); }, hold: (p) => { dir = 0; P = p; draw(); }, play: () => forward('debug'), back: backward, get P() { return P; }, get engine() { return engine; }, tick: (ms) => frame(prev + ms), get state() { return state; } };
   });
 
   /* ---------- Titres : lignes qui montent derrière un masque ---------- */

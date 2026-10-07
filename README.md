@@ -22,14 +22,15 @@ version portrait sur téléphone). Quelques pétales s’en échappent déjà au
 (molette, glissé au doigt, flèche du clavier, clic sur « Faites défiler ») ou après 2,6 secondes :
 
 1. le bouquet **se décompose pétale par pétale**, du cœur vers l’extérieur, d’abord quelques-uns
-   puis très vite tous : environ 1 000 (téléphone) à 3 000 (grand écran) pétales, chacun de la
+   puis très vite tous : environ 700 (téléphone) à 2 600 (grand écran) pétales, chacun de la
    **vraie couleur de la photo** à cet endroit, avivée une fois détaché ;
-2. les pétales **tourbillonnent** autour du bouquet qui s’ouvre, pendant que la photo se dissout ;
+2. le bouquet tourne sur lui-même puis s’ouvre en **tourbillon** : tous les pétales tournent dans le même
+   sens, en spirale, orientés dans le sens du vent (pas d’effet confettis), pendant que la photo se dissout ;
 3. chaque pétale vole vers **la tuile du site qui a sa couleur** (rose → Bouquets du jour,
    vert eucalyptus → Entreprises, mauve → Mariages & événements, crème/pêche → Livraison) : les
    tuiles se remplissent de couleur à mesure que les pétales arrivent, et le titre monte.
 
-Environ 2,7 s en tout. Tout en haut de la page, un geste vers le haut **rejoue l’animation à
+Environ 3 s en tout. Tout en haut de la page, un geste vers le haut **rejoue l’animation à
 l’envers** : les pétales repartent et le bouquet se recompose dans les mains de Sophie.
 
 Technique : `assets/js/bloom.js`, WebGL 2 écrit pour ce site (aucune bibliothèque, ~20 Ko). Toute

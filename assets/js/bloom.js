@@ -48,60 +48,81 @@ void main() {
   o = vec4(c * a, a);
 }`;
 
+  /* Un tourbillon, pas des confettis : tous les pétales tournent dans le même sens autour du
+     bouquet. Chaque trajectoire est une spirale en coordonnées polaires (centre = le bouquet) :
+     l’angle fait environ un tour, le rayon s’élargit puis se pose exactement sur la cible. */
   const VS_PETAL = `#version 300 es
 precision highp float;
 in vec2 aCorner; in vec2 aUv; in vec3 aCol; in vec4 aRnd; in vec4 aRnd2; in vec2 aTgt; in vec3 aTCol; in vec2 aLD; in float aMode;
 uniform vec2 uView; uniform vec4 uCover; uniform vec2 uC; uniform float uP; uniform float uIdle; uniform float uZ0; uniform float uSize;
 out vec2 vUv; out vec3 vCol; out float vA;
 const float PI = 3.14159265;
+const float TAU = 6.2831853;
+const float SPIN = -1.0;                 /* sens du tourbillon (anti-horaire à l’écran) */
 float eo(float x) { x = clamp(x, 0.0, 1.0); return 1.0 - pow(1.0 - x, 3.0); }
 float eio(float x) { x = clamp(x, 0.0, 1.0); return x < 0.5 ? 4.0 * x * x * x : 1.0 - pow(-2.0 * x + 2.0, 3.0) / 2.0; }
+float sio(float x) { x = clamp(x, 0.0, 1.0); return 0.5 - 0.5 * cos(PI * x); }
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, s, -s, c); }
-/* couleur du pétale : celle de la photo, plus franche et plus lumineuse une fois détaché */
+/* couleur du pétale : celle de la photo, un peu plus franche une fois détaché (sans effet bonbon) */
 vec3 vivid(vec3 c) {
   float l = dot(c, vec3(0.3, 0.59, 0.11));
-  vec3 v = clamp(mix(vec3(l), c, 1.9), 0.0, 1.0);
-  v = mix(v, vec3(1.0, 0.97, 0.98), 0.1) + vec3(max(0.0, 0.62 - l) * 0.85);   /* les tons sombres (papier kraft, ombres) deviennent pastel */
+  vec3 v = clamp(mix(vec3(l), c, 1.45), 0.0, 1.0);
+  v = mix(v, vec3(1.0, 0.97, 0.98), 0.08) + vec3(max(0.0, 0.6 - l) * 0.6);
   return clamp(v, 0.0, 1.0);
+}
+/* position sur la spirale au temps t (0 → 1) */
+vec2 spiral(float t, float r0, float a0, float rT, float total, float bulge, float lift) {
+  float ea = sio(t);
+  float er = eio((t - 0.22) / 0.78);     /* d’abord le bouquet tourne sur lui-même, puis il s’ouvre */
+  float a = a0 + total * ea;
+  float r = mix(r0, rT, er) + bulge * sin(PI * er);
+  return uC + r * vec2(cos(a), sin(a)) + vec2(0.0, -lift * sin(PI * ea));
 }
 void main() {
   vec2 O = uCover.xy + aUv * uCover.zw;
-  float spin = aRnd.y < 0.5 ? -1.0 : 1.0;
-  float sz = mix(6.5, 14.0, aRnd.x * aRnd.x) * uSize;
-  float alpha = 1.0, t;
+  float sz = mix(7.0, 12.5, aRnd.x) * uSize;
+  float alpha = 1.0, t, heading = 0.0;
   vec2 pos; vec3 col = aCol;
   if (aMode < 0.5) {
     float L = aLD.x, D = aLD.y;
     t = (uP - L) / D;
     if (t <= 0.0 || t >= 1.0) { gl_Position = vec4(3.0, 3.0, 3.0, 1.0); return; }
     vec2 Oz = uC + (O - uC) * (uZ0 + 0.03 * eo(L / 1.5));
-    float e1 = eo(t / 0.62);
-    float ang = spin * (0.6 + aRnd.z * 1.8) * e1;                       /* le bouquet tourne en s’ouvrant */
-    vec2 S = uC + rot(ang) * (Oz - uC) * (1.0 + 0.45 * e1)
-           + vec2((aRnd.w - 0.3) * 90.0 * e1, -(30.0 + aRnd2.x * 110.0) * e1);
-    float k = eio((t - 0.24) / 0.76);
-    vec2 dv = aTgt - S;
-    vec2 nrm = normalize(vec2(-dv.y, dv.x) + 0.0001);
-    pos = mix(S, aTgt, k) + nrm * sin(PI * k) * (aRnd2.y - 0.5) * 170.0;
-    col = mix(mix(aCol, vivid(aCol), smoothstep(0.02, 0.3, t)), aTCol, smoothstep(0.45, 0.96, t));
-    sz *= mix(0.55, 1.0, smoothstep(0.0, 0.08, t)) * (1.0 - smoothstep(0.84, 1.0, t));
+    vec2 d0 = Oz - uC, dT = aTgt - uC;
+    float r0 = length(d0), rT = length(dT);
+    float a0 = atan(d0.y, d0.x), aT = atan(dT.y, dT.x);
+    float gap = mod(SPIN * (aT - a0), TAU);                              /* angle restant, dans le sens du tourbillon */
+    float inner = 1.3 - 0.55 * smoothstep(0.0, 320.0 * uSize, r0);       /* le cœur tourne plus vite que les bords */
+    float total = SPIN * (gap + TAU * (0.45 + aRnd.z * 0.5) * inner);     /* environ un tour en plus */
+    float bulge = (15.0 + aRnd2.y * aRnd2.y * 280.0) * uSize;             /* la spirale s’élargit (plus ou moins) avant de se poser */
+    float lift = (20.0 + aRnd2.x * 70.0) * uSize;
+    pos = spiral(t, r0, a0, rT, total, bulge, lift);
+    vec2 ahead = spiral(min(t + 0.02, 1.0), r0, a0, rT, total, bulge, lift);
+    heading = atan(ahead.y - pos.y, ahead.x - pos.x);
+    col = mix(mix(aCol, vivid(aCol), smoothstep(0.02, 0.35, t)), aTCol, smoothstep(0.5, 0.97, t));
+    sz *= mix(0.6, 1.0, smoothstep(0.0, 0.1, t)) * (1.0 - smoothstep(0.86, 1.0, t));
   } else {
     float L = aLD.x, D = aLD.y;                                          /* pétales qui s’envolent avant le signal */
     t = (uIdle - L) / D;
     if (t <= 0.0 || t >= 1.0) { gl_Position = vec4(3.0, 3.0, 3.0, 1.0); return; }
     vec2 Oz = uC + (O - uC) * uZ0;
-    pos = Oz + vec2(170.0 * t * (0.6 + aRnd.z) + 26.0 * sin(t * 5.0 + aRnd.w * 6.283), -70.0 * t + 190.0 * t * t);
-    alpha = smoothstep(0.0, 0.06, t) * (1.0 - smoothstep(0.7, 1.0, t)) * (1.0 - smoothstep(-0.19, 0.1, uP));
-    sz *= 1.25;
-    col = mix(aCol, vivid(aCol), smoothstep(0.0, 0.25, t));
+    vec2 d0 = Oz - uC;
+    float a = atan(d0.y, d0.x) + SPIN * 1.6 * sio(t);                     /* ils amorcent déjà le tourbillon */
+    float r = length(d0) + 120.0 * uSize * eo(t);
+    pos = uC + r * vec2(cos(a), sin(a)) + vec2(0.0, -40.0 * t);
+    heading = a + SPIN * PI * 0.5;
+    alpha = smoothstep(0.0, 0.08, t) * (1.0 - smoothstep(0.65, 1.0, t)) * (1.0 - smoothstep(-0.19, 0.1, uP));
+    sz *= 1.15;
+    col = mix(aCol, vivid(aCol), smoothstep(0.0, 0.3, t));
   }
-  float r = aRnd2.z * 6.283 + t * (3.0 + aRnd2.w * 7.0) * spin;
-  float fl = cos(t * (7.0 + aRnd.x * 9.0) + aRnd.w * 6.283);              /* le pétale se retourne */
-  vec2 c = rot(r) * (aCorner * vec2(sz * mix(0.22, 1.0, abs(fl)), sz));
+  /* le pétale suit le vent (orienté dans le sens du mouvement) et se retourne lentement */
+  float r = heading + PI * 0.5 + sin(t * 4.0 + aRnd2.z * TAU) * 0.6;
+  float fl = cos(t * (3.0 + aRnd.x * 3.0) + aRnd.w * TAU);
+  vec2 c = rot(r) * (aCorner * vec2(sz * mix(0.35, 1.0, abs(fl)), sz));
   vec2 P = pos + c;
   gl_Position = vec4(P.x / uView.x * 2.0 - 1.0, 1.0 - P.y / uView.y * 2.0, 0.0, 1.0);
   vUv = aCorner * 0.5 + 0.5;
-  vCol = col * (fl < 0.0 ? 0.84 : 1.0);
+  vCol = col * (fl < 0.0 ? 0.88 : 1.0);
   vA = alpha;
 }`;
 
@@ -260,7 +281,7 @@ void main() {
         const w = (1 - sstep(0.8, 1.22, rr)) * (0.08 + sat * 2.4) * (lum < 0.22 ? 0.03 : 1) * brown;
         if (rand() > w / 1.4) continue;
         // couleur exacte de la photo (le shader l’avive une fois le pétale détaché)
-        out.push({ u, v, col: [r, g, b], fam: family(r, g, b), rnd: [rand(), rand(), rand(), rand()], rnd2: [rand(), rand(), rand(), rand()], dur: 1.15 + rand() * 0.45 });
+        out.push({ u, v, col: [r, g, b], fam: family(r, g, b), rnd: [rand(), rand(), rand(), rand()], rnd2: [rand(), rand(), rand(), rand()], dur: 1.55 + rand() * 0.5 });
       }
       return out;
     }
@@ -274,8 +295,8 @@ void main() {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       const area = canvas.clientWidth * canvas.clientHeight;
-      const n = Math.round(clamp(area / 420, 900, 3200));
-      teasers = 18;
+      const n = Math.round(clamp(area / 520, 700, 2600));
+      teasers = 12;
       petals = sample(img, bouquet, n + teasers);
       count = petals.length;
       gl.bindVertexArray(vaoPetal);
@@ -328,14 +349,15 @@ void main() {
         end = Math.max(end, L + p.dur);
         let tile = null;
         // (une tuile sous l’écran, sur mobile, reste une cible : les pétales filent vers le bas et invitent à défiler)
-        if (reach.length && p.rnd2[3] > 0.26) {
+        if (reach.length && p.rnd2[3] > 0.2) {
           tile = tiles[p.fam] && tiles[p.fam].reach ? tiles[p.fam] : reach[Math.floor(p.rnd[3] * reach.length)];
         }
-        if (tile) { tile.list.push({ i, arrive: L + p.dur * 0.9 }); tcol.set(tile.color, i * 3); }
+        if (tile) { tile.list.push({ i, arrive: L + p.dur * 0.95 }); tcol.set(tile.color, i * 3); }
         else {
-          // emportés par le vent, hors de l’écran
-          tgt[i * 2] = W * (0.55 + p.rnd[2] * 0.6);
-          tgt[i * 2 + 1] = -80 - p.rnd2[0] * 260;
+          // emportés par le tourbillon, hors de l’écran
+          const out = Math.hypot(W, H) * 0.75, ang = p.rnd[2] * Math.PI * 2;
+          tgt[i * 2] = C[0] + Math.cos(ang) * out;
+          tgt[i * 2 + 1] = C[1] + Math.sin(ang) * out;
           tcol.set(p.col, i * 3);
         }
       });
@@ -348,8 +370,8 @@ void main() {
           tgt[e.i * 2] = t.x + t.w / 2 + Math.cos(a) * rr * t.w;
           tgt[e.i * 2 + 1] = t.y + t.h / 2 + Math.sin(a) * rr * t.h;
         });
-        t.from = n ? t.list[Math.floor(n * 0.08)].arrive : 1.2;
-        t.to = n ? t.list[Math.floor(n * 0.9)].arrive : 2.2;
+        t.from = n ? t.list[Math.floor(n * 0.22)].arrive : 1.4;
+        t.to = n ? t.list[Math.min(n - 1, Math.floor(n * 0.97))].arrive + 0.1 : 2.4;
         if (n < 12) { t.from = 1.1; t.to = 2.1; }
         t.list = [];
       });

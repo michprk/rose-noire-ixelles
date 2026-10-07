@@ -22,8 +22,10 @@ version portrait sur téléphone). Quelques pétales s’en échappent déjà au
 (molette, glissé au doigt, flèche du clavier, clic sur « Faites défiler ») ou après 2,6 secondes :
 
 1. le bouquet **se décompose pétale par pétale**, du cœur vers l’extérieur, d’abord quelques-uns
-   puis très vite tous : environ 700 (téléphone) à 2 600 (grand écran) pétales, chacun de la
-   **vraie couleur de la photo** à cet endroit, avivée une fois détaché ;
+   puis très vite tous : 230 (téléphone) à 420 (grand écran) **vrais pétales** — pétales de rose,
+   d’œillet, de lisianthus et feuilles d’eucalyptus, dessinés avec nervures, bombés en 3D, éclairés,
+   avec reflet et ombre portée — dont la couleur suit la photo à cet endroit (rose poudré, fuchsia,
+   lilas, blanc, pêche, vert eucalyptus) ;
 2. le bouquet tourne sur lui-même puis s’ouvre en **tourbillon** : tous les pétales tournent dans le même
    sens, en spirale, orientés dans le sens du vent (pas d’effet confettis), pendant que la photo se dissout ;
 3. chaque pétale vole vers **la tuile du site qui a sa couleur** (rose → Bouquets du jour,

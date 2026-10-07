@@ -215,7 +215,7 @@ ul, ol { padding: 0; list-style: none; }
 
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 1.1vw, 16px); }
 .tile { --f: 1; --c: var(--blush); position: relative; aspect-ratio: 1 / 1.08; border-radius: var(--radius); }
-.tile::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--c); clip-path: circle(calc(var(--f) * 120%) at var(--fx, 50%) var(--fy, 50%)); }
+.tile::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--c); opacity: var(--f); transform: scale(calc(0.86 + var(--f) * 0.14)); }
 .tile--blush { --c: var(--blush); }
 .tile--sage { --c: var(--sage); }
 .tile--lilac { --c: var(--lilac); }
@@ -262,8 +262,8 @@ ul, ol { padding: 0; list-style: none; }
 .js .bloom:not([data-state="site"]) .tile { --f: 0; }
 .js .bloom:not(.gl-on) .tile { transition: --f 1s; }
 .js .bloom:not(.gl-on) .tile .tile__link { transition: opacity .8s ease .5s, transform .5s var(--ease), box-shadow .5s var(--ease); }
-.js .bloom:not(.gl-on)[data-state="site"] .tile::before { transition: clip-path 1.1s var(--ease-io); }
-.js .bloom:not(.gl-on) .tile::before { transition: clip-path .6s ease; }
+.js .bloom:not(.gl-on)[data-state="site"] .tile::before { transition: opacity 1s ease .4s, transform 1.1s var(--ease) .4s; }
+.js .bloom:not(.gl-on) .tile::before { transition: opacity .5s ease, transform .6s ease; }
 /* textes du site : montent ligne par ligne quand le site apparaît */
 .js .bloom .b-in, .js .bloom .hero-title .ln > * { transition: opacity .5s ease, transform .5s var(--ease); }
 .js .bloom:not([data-state="site"]) .b-in { opacity: 0; transform: translate3d(0, 24px, 0); }

@@ -1,0 +1,16 @@
+{
+  "name": "Rose Noire — Fleuriste au Châtelain",
+  "short_name": "Rose Noire",
+  "description": "Des fleurs qui font parler de vous : bouquets composés à la main par Sophie, livrés dans tout Bruxelles.",
+  "lang": "fr-BE",
+  "start_url": "/rose-noire-ixelles/",
+  "scope": "/rose-noire-ixelles/",
+  "display": "standalone",
+  "background_color": "#fff8f2",
+  "theme_color": "#fff8f2",
+  "icons": [
+    { "src": "/rose-noire-ixelles/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/rose-noire-ixelles/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/rose-noire-ixelles/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

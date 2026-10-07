@@ -1,0 +1,17 @@
+# API des formulaires Rose Noire — Cloudflare Workers
+# Déploiement : voir api/README.md
+name = "rose-noire-ixelles-contact"
+main = "contact-worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Plusieurs origines possibles, séparées par des virgules
+ALLOWED_ORIGIN = "https://michprk.github.io,https://rose-noire.be,https://www.rose-noire.be"
+SHOP_EMAIL = "rosenoire160@hotmail.com"
+FROM_EMAIL = "Rose Noire <site@rose-noire.be>"
+
+# Limite anti-spam par adresse IP (facultatif) :
+# npx wrangler kv namespace create RATE_LIMIT  → coller l’identifiant ci-dessous
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT"
+# id = "à-remplacer"

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /rose-noire-ixelles/partials/
+Disallow: /rose-noire-ixelles/scripts/
+Disallow: /rose-noire-ixelles/api/
+
+Sitemap: https://michprk.github.io/rose-noire-ixelles/sitemap.xml

@@ -1,0 +1,69 @@
+# ==========================================================================
+# Rose Noire — configuration serveur Apache / LiteSpeed (Hostinger, OVH, one.com…)
+# À utiliser quand le site est hébergé à la racine du nom de domaine (rose-noire.be).
+# ==========================================================================
+
+# 1. Forcer le HTTPS (redirection permanente)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Formulaire : /api/contact → api/contact.php (hébergement avec PHP)
+  RewriteRule ^api/contact/?$ api/contact.php [L]
+
+  # 2. Liens cassés : les anciennes adresses du site WordPress de rose-noire.be
+  #    mènent à la bonne section au lieu d’une erreur
+  RewriteRule ^(a-propos|realisations)/?$ /#atelier [R=301,NE,L]
+  RewriteRule ^contact/?$ /#contact [R=301,NE,L]
+  RewriteRule ^fleuriste-evenementiel/?$ /#entreprises [R=301,NE,L]
+  RewriteRule ^fleuriste-ouvert-dimanche-bruxelles/?$ /#faq [R=301,NE,L]
+  RewriteRule ^(bouquet-de-fleurs-anniversaire-[a-z]+|cactus-bruxelles|gerbe-de-fleurs-[a-z]+|livraison-fleurs-domicile|fleurs-artificielles|fleurs-sechees|vase-de-fleurs|livraison-fleurs|livraison-de-fleurs|fleurs-de-mariage|bouquet-de-fleurs-anniversaire|gerbe-de-fleurs|cactus)(-[a-z-]+)?/?$ /#boutique [R=301,NE,L]
+  RewriteRule ^fleuriste-[a-z-]+/?$ / [R=301,L]
+  RewriteRule ^nl(/.*)?$ / [R=301,L]
+  RewriteRule ^(feed|comments/feed)/?$ / [R=301,L]
+  RewriteRule ^wp-(admin|login\.php|content|includes|json)(/.*)?$ / [R=301,L]
+  RewriteRule ^xmlrpc\.php$ / [R=301,L]
+
+  # Les blocs communs et scripts de construction n’ont rien à faire en ligne
+  RewriteRule ^(partials|scripts)(/|$) - [F,L]
+</IfModule>
+
+# 3. Page 404 personnalisée
+ErrorDocument 404 /404.html
+
+# 4. En-têtes de sécurité
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-00PWkWwozPRNQ+o8a0wXM4TKaQFPxSyKtCoU8BXlfiI=' https://www.googletagmanager.com; style-src 'self'; img-src 'self' data: blob: https://*.google-analytics.com https://*.googletagmanager.com; font-src 'self'; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.workers.dev; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+</IfModule>
+
+# 5. Cache : longues durées pour les fichiers qui changent rarement (CSS/JS versionnés ?v=…)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType text/javascript "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/webp "access plus 6 months"
+  ExpiresByType image/jpeg "access plus 6 months"
+  ExpiresByType image/png "access plus 6 months"
+  ExpiresByType image/svg+xml "access plus 6 months"
+</IfModule>
+
+# 6. Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript image/svg+xml application/manifest+json application/xml text/plain
+</IfModule>
+
+AddType application/manifest+json .webmanifest
+AddType font/woff2 .woff2
+AddType image/webp .webp
+AddType text/javascript .js .mjs
